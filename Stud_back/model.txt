@@ -1,0 +1,82 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace Exam_backendapi.Models
+{
+    public class Student
+    {
+
+        [Key]
+        public int Id {  get; set; }
+
+        [Required(ErrorMessage ="Name is required")]
+        [StringLength(50 , MinimumLength =3 , ErrorMessage ="name must be 3 to 5 character")]
+        public string Name { get; set; }
+
+        [Required(ErrorMessage ="Email is Required") ]
+        [EmailAddress(ErrorMessage ="Invalid Email")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage ="Gender is required")]
+        public string Gender { get; set; }
+
+        [Required(ErrorMessage ="select at least one checkbox")]
+        public string Hobbies { get; set; }
+
+        [Required(ErrorMessage ="Dob  is required")]
+        public  DateTime DOB { get; set; }
+
+        [Required(ErrorMessage ="course is required")]
+        public string Course { get; set; }
+    }
+
+    public class StudentDTO
+    {
+        public string Name { get; set; }
+
+        [Required(ErrorMessage = "Email is Required")]
+        [EmailAddress(ErrorMessage = "Invalid Email")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "Gender is required")]
+        public string Gender { get; set; }
+
+        [Required(ErrorMessage = "select at least one checkbox")]
+        public string Hobbies { get; set; }
+
+        [Required(ErrorMessage = "Dob  is required")]
+        public DateTime DOB { get; set; }
+
+        [Required(ErrorMessage = "course is required")]
+        public string Course { get; set; }
+    }
+
+    public class updatedto {
+
+        [Required(ErrorMessage = "Email is Required")]
+        [EmailAddress(ErrorMessage = "Invalid Email")]
+        public string Email { get; set; }
+
+
+        [Required(ErrorMessage = "select at least one checkbox")]
+        public string Hobbies { get; set; }
+
+        [Required(ErrorMessage = "course is required")]
+        public string Course { get; set; }
+    }
+}
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFronted",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5161")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+        });
+});
+
+
+builder.Services.AddDbContext<AppDbContext>(option =>
+{
+    option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});

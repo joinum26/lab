@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "List Student";
+}
+
+<h2>Student List</h2>
+<input type="text" id="sreachbtn"  placeholder="sreach by name"/>
+<a href="/Student/Create">Add New Student</a>
+<br />
+<br />
+
+<table border="1" class="table-bordered">
+   
+        <thead>
+             <tr>
+            <th>Id</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Gender</th>
+            <th>Hobbies</th>
+            <th>DOB</th>
+            <th>Course</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+        <tbody id="StudentTable"></tbody>
+    
+</table>
+<p id=" message"></p>
+
+@section Scripts{
+    <script>
+        var apiUrl = "http://localhost:5172/api/Student";
+        
+
+        function loadstudent(){
+
+            var search = $("#sreachbtn").val().trim();
+            var url = ""
+
+            if(search === "")
+            {
+                    url= apiUrl;
+            }
+            else
+            {
+                url = apiUrl +"/search?search=" + search;
+            }
+
+
+            $.ajax({
+                url:url,
+                type:"GET",
+                data:{search :search},
+
+                success: function(data){
+                    var  rows = "";
+
+                    if(data.length == 0)
+                    {
+                        rows = `<tr><td colspan="8">No Record Found</td></tr>`;
+
+                    }
+
+                    data.forEach(s => {
+                        rows += `<tr>
+                        <td>${s.id}</td>
+                        <td>${s.name}</td>
+                        <td>${s.email}</td>
+                        <td>${s.gender}</td>
+                        <td>${s.hobbies}</td>
+                        <td>${s.dob}</td>
+                        <td>${s.course}</td>
+                        <td>
+                        <a href="/Student/Edit1?id=${s.id}">Edit</a>
+                        <Button onclick="deletestudent(${s.id})">Delete</Button>
+                        </tr>`
+                    });
+                    $("#StudentTable").html(rows);
+                }
+            })
+        }
+
+        function deletestudent(id){
+            if(!confirm("are you sure you want to delete")) return;
+
+
+            $.ajax({
+                url: apiUrl + "/" + id,
+                type:"DELETE",
+                success: function(){
+                    alert("deleted");
+                    window.location.href = "/Student/Index";
+                },
+                error: function(){
+                    alert("error");
+                    
+                }
+            })
+        }
+
+        $(document).ready(function(){
+            loadstudent();
+
+            $("#sreachbtn").on("keyup" , function()
+            {
+                loadstudent();
+            })
+        });
+    </script>
+}

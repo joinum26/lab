@@ -1,0 +1,205 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+
+namespace finalll.Models
+{
+    public class Product
+    {
+        [Key]
+        public int pId { get; set; }
+
+        [Required]
+        public string pName { get; set; }
+
+        [Column(TypeName = "Decimal(18,2)")]
+        public decimal Price { get; set; }
+
+        [ForeignKey("Category")]
+        public int CatId { get; set; }
+
+        [JsonIgnore]
+        public Category Category { get; set; }
+    }
+}
+
+using System.ComponentModel.DataAnnotations;
+
+namespace finalll.Models
+{
+    public class Category
+    {
+        [Key] 
+        public int CatId { get; set; }
+
+        [Required,StringLength(50,ErrorMessage = "Product name is requried")]
+        public string catName { get; set; }
+
+        public ICollection<Product> products { get; set; }
+    }
+
+
+    
+}
+using finalll.Data;
+using finalll.DTOs;
+using finalll.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace finalll.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductController : ControllerBase
+    {
+
+      private readonly AppDbContext _context;
+
+        public ProductController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // get all with category name
+        [HttpGet]
+
+        public async Task<ActionResult> getallproducts()
+        {
+            var data = await _context.Products
+                .Include(c => c.Category)
+                .Select(c => new ProductDTO
+                {
+                    pId = c.pId,
+                    pName = c.pName,
+                    Price = c.Price,
+                    CatId = c.CatId,
+                    catName = c.Category.catName
+                }).ToListAsync();
+            return Ok(data);
+        }
+
+
+        [HttpPost]
+
+        public async Task<ActionResult<Product>> AddProduct(ProductDTO dto)
+        {
+
+            Product p = new Product()
+            {
+                pName = dto.pName,
+                Price = dto.Price,
+                CatId = dto.CatId  
+            };
+            var data = await _context.Products.AddAsync(p);
+            await _context.SaveChangesAsync();
+            return Ok(p);
+        }
+        
+        [HttpPut("{id}")]
+
+        public async Task<ActionResult> UpdateProduct(int id, ProductDTO dto)
+        {
+            var data = await _context.Products.FindAsync(id);
+
+
+            data.pName = dto.pName;
+            data.Price = dto.Price;
+            data.CatId = dto.CatId;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(data);
+        }
+
+        [HttpDelete("{id}")]
+
+        public async Task<ActionResult> DeleteProduct(int id)
+        {
+            var data = await _context.Products.FindAsync(id);
+
+          
+
+            _context.Products.Remove(data);
+            await _context.SaveChangesAsync();
+
+            return Ok("Product Deleted Successfully");
+        }
+    }
+}
+using finalll.Data;
+using finalll.DTOs;
+using finalll.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Runtime.InteropServices;
+
+namespace finalll.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class CategoryController : ControllerBase
+    {
+
+        private readonly AppDbContext _context;
+
+        public CategoryController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+
+        [HttpGet]
+
+        public async Task<ActionResult<List<Category>>>  getallcategory()
+        {
+            var data = await _context.Categories.ToListAsync();
+            return Ok(data);
+        }
+
+
+        [HttpPost]
+
+        public async Task<ActionResult<Category>> AddData(CategoryDTO dto)
+        {
+            Category c = new Category()
+            {
+                catName = dto.catName
+
+            };
+
+            await _context.Categories.AddAsync(c);
+            await _context.SaveChangesAsync();
+
+            return Ok(c);
+        }
+
+
+        [HttpPut("{CatId}")]
+
+        public async Task<ActionResult> UpDatecategory(int CatId ,CategoryDTO dto)
+        {
+            var data = await _context.Categories.FindAsync(CatId);
+
+            data.catName = dto.catName;
+
+            await _context.SaveChangesAsync();
+            return Ok(data);
+        }
+
+        [HttpDelete("{CatId}")]
+
+        public async Task<ActionResult> deletecate(int CatId , CategoryDTO dto)
+        {
+            var data = await _context.Categories.FindAsync(CatId);
+
+             _context.Categories.Remove(data);
+            await _context.SaveChangesAsync();
+            return Ok("sucessfull dleete");
+
+        }
+
+    }
+}

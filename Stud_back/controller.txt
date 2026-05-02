@@ -1,0 +1,147 @@
+using Exam_backendapi.Data;
+using Exam_backendapi.Models;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Exam_backendapi.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class StudentController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+
+        public StudentController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        [HttpGet]
+
+        public async Task<ActionResult<List<Student>>> GetStudent()
+        {
+            var data = await _context.Students.ToListAsync();
+            return Ok(data);
+        }
+
+        [HttpGet("{id}")]
+
+        public async Task<ActionResult> getbyid(int id)
+        {
+            var student = await _context.Students.FindAsync(id);
+
+            if (student == null)
+            {
+                return NotFound("Student is not found");
+            }
+
+            return Ok(student);
+
+        }
+
+
+        [HttpPost]
+
+        public async Task<ActionResult> addStudent(StudentDTO dto)
+        {
+            var Student = new Student()
+            {
+                Name = dto.Name,
+                Email = dto.Email,
+                Gender = dto.Gender,
+                Hobbies = dto.Hobbies,
+                DOB = dto.DOB,
+                Course = dto.Course,
+            };
+
+            _context.Students.Add(Student);
+            await _context.SaveChangesAsync();
+
+            return Ok(Student);
+
+        }
+
+
+        [HttpPut("{id}")]
+
+        public async Task<ActionResult> updatestudent(int id, StudentDTO dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var student = await _context.Students.FindAsync(id);
+
+            if (student == null)
+            {
+                return NotFound("Student is not Found");
+            }
+
+            student.Name = dto.Name;
+            student.Email = dto.Email;
+            student.Gender = dto.Gender;
+            student.Hobbies = dto.Hobbies;
+            student.DOB = dto.DOB;
+            student.Course = dto.Course;
+
+            await _context.SaveChangesAsync();
+            return Ok("Student update successfully");
+        }
+
+        [HttpDelete("{id}")]
+
+        public async Task<ActionResult> deletestudent(int id)
+        {
+            var studnet = await _context.Students.FindAsync(id);
+
+            if (studnet == null)
+            {
+                return NotFound("student is not found");
+            }
+
+            _context.Students.Remove(studnet);
+            await _context.SaveChangesAsync();
+
+            return Ok("Student is delete");
+
+        }
+
+        [HttpGet("search")]
+
+        public async Task<ActionResult> Searchstudent(string search)
+        {
+            if(string.IsNullOrEmpty(search))
+            {
+                return Ok(await _context.Students.ToListAsync());
+            }
+
+            var data = await _context.Students
+                .Where(s => s.Name.Contains(search) || s.Email.Contains(search)).ToListAsync();
+            return Ok(data);
+
+        }
+        [HttpPut("update/{id}")]
+        public async Task<ActionResult> UpdateStudentFields(int id, updatedto dto)
+        {
+            
+
+            var student = await _context.Students.FindAsync(id);
+
+            if (student == null)
+            {
+                return NotFound("Student not found");
+            }
+
+            // 🔥 Only these 3 fields update
+            student.Email = dto.Email;
+            student.Hobbies = dto.Hobbies;
+            student.Course = dto.Course;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Selected fields updated successfully");
+        }
+
+
+    }
+}

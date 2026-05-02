@@ -1,0 +1,189 @@
+@{
+    ViewData["Title"] = "Edit Emp";
+}
+
+<h2>Edit employee</h2>
+<p id="message"></p>
+Name:
+<input type="text" id="name" />
+<br />
+<br />
+
+ Email:
+<input type="email" id="email" />
+<br />
+<br />
+
+ Gender:
+<input type="radio" name="gender" value="male" />Male
+<input type="radio" name="gender" value="female" />female
+<br />
+<br />
+
+ Skills:
+<input type="checkbox" name="skill" value="java" />java
+<input type="checkbox" name="skill" value="sql" />sql
+<input type="checkbox" name="skill" value="english" />english
+<br />
+<br />
+
+ Joining date
+<input type="date" id="date" />
+<br />
+<br />
+
+ Department
+<select id="department">
+    <option value="">Select</option>
+    <option>Dept</option>
+    <option>HR</option>
+    <option>IT</option>
+</select>
+<br />
+<br />
+
+<button onclick="updateemp()">update</button>
+<a href="/Employee/Index">Back</a>
+
+@section Scripts{
+
+    <script>
+        var apiUrl = "https://localhost:7172/api/Employee";
+
+        var id = new URLSearchParams(window.location.search).get("id");
+
+         function validationform()
+        {
+            var name = $("#name").val().trim();
+            var email = $("#email").val().trim();
+            var gender =$("input[name='gender']:checked").val();
+            var date =$("#date").val();
+            var department = $("#department").val();
+            var skills = $("input[name='skill']:checked").val();
+
+            var message= "";
+            var isValid = true;
+
+            if(name === "")
+            {
+                message += "name is required<br>";
+                isValid = false;
+            }
+            if(email === "")
+            {
+                message += "email is valid<br>";
+                isValid = false;
+            }
+            if(!gender)
+            {
+                message += "select gender";
+                isValid = false;
+            }
+            if(skills.length === 0)
+            {
+                 message += "slect is required<br>";
+                isValid = false;
+            }
+
+            if(date === "")
+            {
+                 message += "date is required<br>";
+                isValid = false;
+            }
+            if(department === "")
+            {
+                 message += "department is required<br>";
+                isValid = false;
+            }
+
+            if(!isValid)
+            {
+                $("#message").html(message);
+            }
+            else{
+                $("#message").html("");
+            }
+            return isValid;
+        }
+
+
+        function loademp()
+        {
+            $.ajax({
+                url: apiUrl + "/" + id,
+                type: "GET",
+
+                success: function(e){
+
+                    $("#name").val(e.name);
+                    $("#email").val(e.email);
+                    $("#date").val(e.joiningDate.split('T')[0]);
+                    $("#department").val(e.department);
+
+                    if(e.gender == "male")
+                    {
+                        $("input[name='gender']").prop("checked" , true);
+
+                    }
+                    else{
+                        $("input[name='gender']").prop("checked" ,true);
+                    }
+
+                    if(e.skills.includes("java"))
+                    {
+                        $("input[name='skill']").prop("checked" , true);
+
+                    }
+                    if(e.skills.includes("sql"))
+                    {
+                        $("input[name='skill']").prop("checked" , true);
+                    }
+                    if(e.skills.includes("english"))
+                    {
+                        $("input[name='skill']").prop("checked" , true);                    }
+                }
+            })
+        }
+
+        function updateemp()
+        {
+
+            if(!validationform()) return;
+            var skills = [];
+
+            $("input[name='skill']:checked").each(function()
+            {
+                skills.push($(this).val());
+            })
+
+            var employee = {
+                name : $("#name").val(),
+                email :$("#email").val(),
+                gender :$("input[name='gender']:checked").val(),
+                skills: skills.join(","),
+                joiningDate :$("#date").val(),
+                department : $("#department").val()
+            };
+
+            $.ajax({
+                url:apiUrl + "/" + id,
+                type:"PUT",
+                contentType : "application/json",
+                data: JSON.stringify(employee),
+                success: function(){
+                    alert("update sucessfuly");
+                    window.location.href = "/Employee/Index";
+                },
+                error: function()
+                {
+                    alert("error")
+                }
+
+            })
+        }
+
+        $(document).ready(function(){
+            loademp();
+        });
+    </script>
+}

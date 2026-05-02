@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Employee List";
+}
+
+<h2>Employee List</h2>
+
+<a href="/Employee/Create">Add new employee</a>
+
+
+<input type="text" id="searchbtn" placeholder="search" />
+<table border="1" class="table-bordered">
+
+    <thead>
+        <tr>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Email</td>
+            <td>Gender</td>
+            <td>Skills</td>
+            <td>Join Date</td>
+            <td>Department</td>
+            <td>Action</td>
+        </tr>
+
+    </thead>
+    <tbody id="empTable"></tbody>
+</table>
+
+@section Scripts{
+
+    <script>
+        var apiUrl = "https://localhost:7172/api/Employee";
+
+         function loademp(){
+
+             var search = $("#searchbtn").val().trim();
+
+             var url = "";
+
+            if(search === "")
+            {
+                url = apiUrl;
+            }
+            else{
+                url = apiUrl + "/search?search=" + search;
+            }
+
+             $.ajax({
+                 url:url,
+                 type:"GET",
+                 success: function(data){
+
+                     var rows = "";
+
+                     if(data.length == 0)
+                     {
+                         rows = `<tr><td colspan='7'>record not found</td></tr>`;
+                     }
+                     data.forEach(e=>
+                         {
+                             rows += `<tr> 
+                                    <td>${e.id}</td>
+                                    <td>${e.name}</td>
+                                    <td>${e.email}</td>
+                                    <td>${e.gender}</td>
+                                    <td>${e.skills}</td>
+                                    <td>${e.joiningDate}</td>
+                                    <td>${e.department}</td>
+                                    <td>
+                                    <a href="/Employee/Edit?id=${e.id}">Edit</a>
+                                    <button onclick="deleteemp(${e.id})">Delete</button>
+                                    </td>
+                             </tr>`
+
+                         });
+
+                         $("#empTable").html(rows);
+                 }
+             })
+         }
+
+         function deleteemp(id){
+
+             if (!confirm("are you sure")) return;
+
+             $.ajax({
+                 url: apiUrl + "/" + id,
+                 type: "DELETE",
+                 success: function(){
+                     alert("delete sucessfully")
+                     window.location.href = "/Employee/Index";
+                 },
+                 error: function(){
+                     alert("error");
+                 }
+             })
+         }
+
+         $(document).ready(function()
+         {
+             
+             $("#searchbtn").on("keyup" , function(){
+                loademp();
+             });
+             loademp();
+         })
+
+     
+    </script>
+}

@@ -1,0 +1,136 @@
+@{
+    ViewData["Title"] = "Edit Student";
+}
+Email:
+<input type="email" id="email" />
+<br />
+<br />
+
+    Hobbies:
+<input type="checkbox" name="hobby" value="reading" /> Reading
+<input type="checkbox" name="hobby" value="sports" /> Sports
+<input type="checkbox" name="hobby" value="music" /> Music
+<br />
+<br />
+
+    Course:
+<select id="course">
+    <option value="">select</option>
+    <option>BCA</option>
+    <option>BBA</option>
+    <option>BCOM</option>
+</select>
+<br />
+<br />
+
+<button onclick="updatestudent()">Update Student</button>
+<a href="/Student/Index">Back</a>
+
+
+@section Scripts{
+<text>
+<script>
+
+    var apiUrl = "http://localhost:5172/api/Student";
+    var id = new URLSearchParams(window.location.search).get("id");
+
+    function loadstudent(){
+        $.ajax({
+             url: apiUrl + "/" + id,
+            type: "GET",
+            success: function(s){
+
+                $("#email").val(s.email);
+                $("#course").val(s.course);
+
+                if(s.hobbies){
+                    var h = s.hobbies.split(",");
+
+                    $("input[name='hobby']").each(function(){
+                        if(h.includes($(this).val())){
+                            $(this).prop("checked", true);
+                        }
+                    });
+                }
+            }
+        });
+    }
+
+    function validateForm(){
+
+        var email = $("#email").val().trim();
+        var course = $("#course").val();
+        var hobbies = $("input[name='hobby']:checked");
+
+        var message = "";
+        var isValid = true;
+
+        if(email === ""){
+            message += "Email is required <br>";
+            isValid = false;
+        }
+        
+
+        if(hobbies.length === 0){
+            message += "Select at least one hobby <br>";
+            isValid = false;
+        }
+
+        if(course === ""){
+            message += "Select course <br>";
+            isValid = false;
+        }
+
+        if(!isValid){
+            $("#message").html(message).css("color","red");
+        }
+        else{
+            $("#message").html("");
+        }
+
+        return isValid;
+    }
+
+    function updatestudent(){
+
+        if(!validateForm()) return;
+
+        var hobbies = [];
+        $("input[name='hobby']:checked").each(function(){
+            hobbies.push($(this).val());
+        });
+
+        var student = {
+            email: $("#email").val(),
+            hobbies: hobbies.join(","),
+            course: $("#course").val()
+        };
+
+        $.ajax({
+            url: apiUrl + "/update/" + id,
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify(student),
+
+            success: function(){
+                $("#message").html("Student updated successfully").css("color","green");
+
+                setTimeout(function(){
+                    window.location.href = "/Student/Index";
+                }, 1000);
+            },
+
+            error: function(err){
+                console.log(err.responseText);
+                $("#message").html("Error while updating").css("color","red");
+            }
+        });
+    }
+
+    $(document).ready(function(){
+        loadstudent();
+    });
+
+</script>
+</text>
+}

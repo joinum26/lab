@@ -1,0 +1,137 @@
+@{
+    ViewData["Title"] = "Add Student";
+}
+
+<h2>Add student</h2>
+
+<p id="message"></p>
+Name:
+<input type="text" id="name" />
+<br /><br />
+
+Email:
+<input type="email" id="email" />
+<br />
+<br />
+
+Gender:
+<input type="radio" name="gender" value="male" />Male
+<input type="radio" name="gender" value="female" />Female
+<br />
+<br />
+
+Hobbies:
+<input type="checkbox" name="hobby" value="reading" />Reading
+<input type="checkbox" name="hobby" value="sports" /> sports
+<input type="checkbox" name="hobby" value="music" /> Music
+<br /><br />
+
+DOB:
+<input type="date" id="dob" />
+<br />
+<br />
+<select id="course">
+    <option value="">select </option>
+    <option>BCA</option>
+    <option>BBA</option>
+    <option>BCOM</option>
+</select>
+<br /><br />
+
+<button onclick="addstudent()">Add new student</button>
+<a href="/Student/Index">Back</a>
+
+@section Scripts{
+    <script>
+        var apiUrl="http://localhost:5172/api/Student";
+
+        function validationform()
+        {
+             var name = $("#name").val().trim();
+             var email = $("#email").val().trim();
+             var gender = $("input[name='gender']:checked").val();
+             var dob = $("#dob").val();
+             var course = $("#course").val();
+             var hobbies = $("input[name=hobby]:checked");
+
+             var message = "";
+             var isValid = true;
+
+             if(name ==="" || name.length <3)
+             {
+                 message +="Name must be 3<br>";
+                 isValid = false;
+             }
+
+              if (email === "") 
+              {
+            message += "Email is required<br>";
+            isValid = false;
+             }
+               if (!gender) {
+              message += "Select gender<br>";
+              isValid = false;
+          }
+               if (hobbies.length === 0) {
+              message += "Select at least one hobby<br>";
+              isValid = false;
+          }
+
+          if (dob === "") {
+              message += "Select DOB<br>";
+              isValid = false;
+          }
+
+          if (course === "") {
+              message += "Select course<br>";
+              isValid = false;
+          }
+
+          if(!isValid)
+          {
+              $("#message").html(message);
+
+          }
+          else{
+              $("#message").html("");
+          }
+
+          return isValid;
+
+        }
+
+        function addstudent(){
+
+              if(!validationform()) return;
+        var hobbies = [];
+        $("input[name='hobby']:checked").each(function(){
+            hobbies.push($(this).val());
+        });
+
+        var student =
+        {
+            name: $("#name").val(),
+            email:$("#email").val(),
+            gender: $("input[name='gender']:checked").val(),
+            hobbies:hobbies.join(","),
+              dob: $("#dob").val(),
+              course:$("#course").val()
+        };
+
+        $.ajax({
+            url: apiUrl,
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(student),
+            success: function(){
+                alert("student add successfuly");
+                window.location.href = "/Student/Index";
+                
+            },
+            error: function(){
+               alert("error");
+            }
+        })
+      }
+    </script>
+}
